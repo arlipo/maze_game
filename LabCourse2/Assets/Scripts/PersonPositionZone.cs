@@ -1,0 +1,123 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using PolygonModel = EPPZ.Geometry.Model.Polygon;
+using PolygonSource = EPPZ.Geometry.Source.Polygon;
+using EPPZ.Geometry.AddOns;
+
+public class PersonPositionZone : MonoBehaviour
+{
+    public GameObject floor;
+    public GameObject viewArea;
+    [Range(0f, 2f)]
+    public float updateAccuracy;
+    public bool drawWholePolygon;
+    public float victimSpeed;
+    PolygonModel mainPolygon;
+    PolygonModel floorPolygon;
+    PolygonModel viewPolygon;
+    ViewArea viewAreaScript;
+    MeshFilter meshFilter;
+    Vector3 prevPos;
+    Vector3 newPos;
+    void Awake()
+    {
+        InitComponents();
+        InitializeMainPolygon();
+        UpdatePosition();
+        CalculateNewArea();
+    }
+    void InitializeMainPolygon() {
+        // PolygonModel biggest = null;
+        // var resultPolygon = new PolygonModel();
+        // floorPolygon.EnumeratePolygons(poly => {
+        //     poly.Calculate();
+        //     if (poly.isCCW) {
+        //         resultPolygon.AddPolygon(poly);
+        //     } else {
+        //         biggest = biggest ?? poly;
+        //         Debug.Log($"poly: {poly.area}, biggest: {biggest.area}");
+        //         if (poly.area < biggest.area) biggest = poly;
+        //     }
+        // });
+        // resultPolygon.AddPolygon(biggest);
+        mainPolygon = floorPolygon.Copy();
+        this.transform.Rotate(90, 0, 0);
+    }
+    void InitComponents() {
+        floorPolygon = floor.GetComponent<PolygonSource>().polygon;
+        viewPolygon = viewArea.GetComponent<PolygonSource>().polygon;
+        viewAreaScript = viewArea.GetComponent<ViewArea>();
+        meshFilter = GetComponent<MeshFilter>();
+    }
+    // Start is called before the first frame update
+    void Start()
+    {
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        UpdatePosition();
+        CalculateNewArea();
+        if (NewAreaCalcIsNeeded() || !drawWholePolygon) {
+            ReDrawArea();
+        }
+    }
+
+    void UpdatePosition(){
+        newPos = viewAreaScript.mainObject.transform.position;
+    }
+
+    void CalculateNewArea() {
+        if (mainPolygon == null) return;
+        mainPolygon = mainPolygon.OffsetPolygon(victimSpeed * Time.deltaTime);
+        mainPolygon = mainPolygon.IntersectPolygon(floorPolygon);
+        mainPolygon = mainPolygon.SubtractPolygon(viewPolygon);
+    }
+
+    void ReDrawArea() {
+        prevPos = newPos;
+        var polygonToShow = drawWholePolygon ? mainPolygon : mainPolygon.IntersectPolygon(viewPolygon.OffsetPolygon(2));
+        meshFilter.mesh = polygonToShow?.Mesh(Color.green, TriangulatorType.Dwyer);
+    }
+    bool NewAreaCalcIsNeeded() {
+        System.Func<float, float, bool> isIdentical = (pos1, pos2) =>
+        {
+            return Mathf.Abs(RoundPosition(pos1) - RoundPosition(pos2)) < updateAccuracy;
+        };
+        var xIsIdentical = isIdentical(newPos.x, prevPos.x);
+        var zIsIdentical = isIdentical(newPos.z, prevPos.z);
+        return !(xIsIdentical && zIsIdentical);
+    }
+
+    private float RoundPosition(float pos1)
+    {
+        return (float) System.Math.Round(pos1, 1);
+    }
+
+    GUIStyle guiStyle = new GUIStyle();
+    GUIStyle groupStyle = new GUIStyle();
+    void OnGUI()
+    {
+        var width = 250;
+        var height = 125;
+                Color[] pix = new Color[width*height];
+        for(int i = 0; i < pix.Length; i++)
+            pix[i] = new Color(0.5f, 0.5f, 0.5f, 0.7f);
+        Texture2D result = new Texture2D(width, height);
+        result.SetPixels(pix);
+        result.Apply();
+
+        guiStyle.fontSize = 25;
+        guiStyle.normal.textColor = Color.white;
+        groupStyle.normal.background = result;
+        
+        GUI.BeginGroup(new Rect(10, 10, width, height), groupStyle);
+        GUI.Box(new Rect(0,0,140,140), "Previous position", guiStyle);
+        GUI.Label(new Rect(10, 25, 200, 30), string.Format("x: {0}, z: {1}", RoundPosition(prevPos.x), RoundPosition(prevPos.z)), guiStyle);
+        GUI.Box(new Rect(0, 50, 200, 30), "New position", guiStyle);
+        GUI.Label(new Rect(10, 75, 200, 30), string.Format("x: {0}, z: {1}", RoundPosition(newPos.x), RoundPosition(newPos.z)), guiStyle);
+        GUI.EndGroup();
+    }
+}

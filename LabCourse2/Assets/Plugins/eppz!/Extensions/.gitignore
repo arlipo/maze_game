@@ -1,0 +1,12 @@
+### Ignore meta (OSX)
+.DS_Store
+
+### Ignore meta (Unity)
+*.meta
+
+### Ignore test files
+packages
+bin
+obj
+*.userprefs
+TestResult.xml

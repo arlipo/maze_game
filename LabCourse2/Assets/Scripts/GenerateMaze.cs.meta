@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 3e6db2ccb89d447b091505f2797ae243
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - CheckPointHigh: {fileID: 1389443076154874, guid: 4ce69fd8efa60944d9efdcfadd6d275e,
+      type: 3}
+  - CheckPointLow: {fileID: 1389443076154874, guid: ca8ae40effa228a44a52b05d0c3919ac,
+      type: 3}
+  - Spawn: {fileID: 1389443076154874, guid: bff55931743cb874fbf07e9960eed41f, type: 3}
+  - blockPrefab: {fileID: 1389443076154874, guid: c6e6cba4a1cdb494ead1b697c1d772f4,
+      type: 3}
+  - redMaterial: {fileID: 2100000, guid: e8c8870027b1699409e9e88a70a26e9e, type: 2}
+  executionOrder: -50
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
