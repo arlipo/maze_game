@@ -8,11 +8,10 @@ using PolygonFactory = EPPZ.Geometry.Model.Polygon;
 
 // [RequireComponent(typeof(MeshFilter))]
 public class GenerateMaze : MonoBehaviour {
-	public static readonly float positionAccuracy = 1000;
 	public GameObject wallPrefab;
 	public bool simplified;
 	public int size;
-	int emptySpacesSize = 8;
+	const int emptySpacesSize = 8;
 	Transform floor;
 	Transform walls;
 	Polygon floorPolygon;
