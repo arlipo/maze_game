@@ -20,6 +20,7 @@ public class PersonPositionZone : MonoBehaviour
     MeshFilter meshFilter;
     Vector3 prevPos;
     Vector3 newPos;
+    bool ended = false;
     void Awake()
     {
         InitComponents();
@@ -28,20 +29,17 @@ public class PersonPositionZone : MonoBehaviour
         CalculateNewArea();
     }
     void InitializeMainPolygon() {
-        // PolygonModel biggest = null;
-        // var resultPolygon = new PolygonModel();
-        // floorPolygon.EnumeratePolygons(poly => {
-        //     poly.Calculate();
-        //     if (poly.isCCW) {
-        //         resultPolygon.AddPolygon(poly);
-        //     } else {
-        //         biggest = biggest ?? poly;
-        //         Debug.Log($"poly: {poly.area}, biggest: {biggest.area}");
-        //         if (poly.area < biggest.area) biggest = poly;
-        //     }
-        // });
-        // resultPolygon.AddPolygon(biggest);
-        mainPolygon = floorPolygon.Copy();
+        PolygonModel biggest = null;
+        var resultPolygon = new PolygonModel();
+        floorPolygon.EnumeratePolygons(poly => {
+            poly.Calculate();
+            if (poly.isCCW) resultPolygon.AddPolygon(poly);
+            else if (biggest == null || poly.area < biggest.area) biggest = poly;
+            else if (Mathf.Abs(biggest.area - poly.area) < Mathf.Abs(biggest.area * 0.05f) && poly.polygonCount < biggest.polygonCount)
+                biggest = poly;    
+        });
+        resultPolygon.AddPolygon(biggest);
+        mainPolygon = resultPolygon;
         this.transform.Rotate(90, 0, 0);
     }
     void InitComponents() {
@@ -56,8 +54,10 @@ public class PersonPositionZone : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
+        if (ended) return;
+        if (mainPolygon == null) { EndIt(); return; }
         UpdatePosition();
         CalculateNewArea();
         if (NewAreaCalcIsNeeded() || !drawWholePolygon) {
@@ -65,12 +65,16 @@ public class PersonPositionZone : MonoBehaviour
         }
     }
 
+    void EndIt() {
+        ended = true;
+        meshFilter.mesh = null;
+    }
+
     void UpdatePosition(){
         newPos = viewAreaScript.mainObject.transform.position;
     }
 
     void CalculateNewArea() {
-        if (mainPolygon == null) return;
         mainPolygon = mainPolygon.OffsetPolygon(victimSpeed * Time.deltaTime);
         mainPolygon = mainPolygon.IntersectPolygon(floorPolygon);
         mainPolygon = mainPolygon.SubtractPolygon(viewPolygon);

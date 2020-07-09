@@ -77,7 +77,7 @@ public class GenerateMaze : MonoBehaviour {
 				if (isBorder(x, z)) InstantiateWall(x, z, false);
 				else if (wallsBoolean[z][x]) InstantiateWall(x, z);
 			}
-		} 
+		}
     }
 	bool isBorder(int x, int z) => x == 0 || z == 0 || x == size - 1 || z == size - 1;
 	bool isFromStart(int index) => index < emptySpacesSize;

@@ -945,7 +945,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wallPrefab: {fileID: 1389443076154874, guid: c6e6cba4a1cdb494ead1b697c1d772f4, type: 3}
-  simplified: 1
+  simplified: 0
   size: 40
 --- !u!4 &2112824884
 Transform:

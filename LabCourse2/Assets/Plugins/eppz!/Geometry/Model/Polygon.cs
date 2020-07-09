@@ -602,6 +602,7 @@ namespace EPPZ.Geometry.Model
 			clipper.AddPaths(clipPaths, PolyType.ptClip, true);
 			clipper.Execute(type, solution);
 
+			solution = Clipper.SimplifyPolygons(solution);
 			Polygon resultPolygon = null;
 			for (int index = 0; index < solution.Count; index++)
 			{
