@@ -89,13 +89,12 @@ public class GenerateMaze : MonoBehaviour {
     bool[][] GetWallsArray()
     {
         var wallsB = new bool[size][];
-        for (int z = 0; z < size; z++)
+        for (int z = 1; z < size - 1; z++)
         {
             wallsB[z] = new bool[size];
-            for (int x = 0; x < size; x++)
+            for (int x = 1; x < size - 1; x++)
             {
-                if (isBorder(x, z)) continue;
-                else if (isCenter(x, z)) wallsB[z][x] = true;
+                if (isCenter(x, z)) wallsB[z][x] = true;
                 else if (isFromStart(x) && isFromStart(z)) continue;
                 else if (isFromEnd(x) && isFromStart(z)) continue;
                 else if (isFromStart(x) && isFromEnd(z)) continue;
