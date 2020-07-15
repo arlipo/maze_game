@@ -9,12 +9,14 @@ using PolygonFactory = EPPZ.Geometry.Model.Polygon;
 // [RequireComponent(typeof(MeshFilter))]
 public class GenerateMaze : MonoBehaviour {
 	public GameObject wallPrefab;
-	public bool simplified;
+	public MazeStyle mazeStyle;
 	public int size;
 	const int emptySpacesSize = 8;
 	Transform floor;
 	Transform walls;
 	Polygon floorPolygon;
+
+	public enum MazeStyle { simplified, cross, random }
 
 	/// <summary>
 	/// Start is called on the frame when a script is enabled just before
@@ -99,16 +101,20 @@ public class GenerateMaze : MonoBehaviour {
                 else if (isFromEnd(x) && isFromStart(z)) continue;
                 else if (isFromStart(x) && isFromEnd(z)) continue;
                 else if (isFromEnd(x) && isFromEnd(z)) continue;
-                else if (!simplified)
-                {
-                    System.Func<float, float> abs = num => Mathf.Abs(num);
-
-                    var minWDist = x < abs(x - size) ? x : abs(x - size);
-                    var minDDist = z < abs(z - size) ? z : abs(z - size);
-                    var totalDist = abs(minDDist - minWDist);
-
-                    var half = size / 2.0f;
-                    var chance = totalDist / half;
+                else {
+					float chance = 1;
+					switch (mazeStyle) {
+						case MazeStyle.simplified: chance = 0; break;
+						case MazeStyle.random: chance = 0.3f; break;
+						case MazeStyle.cross:
+							System.Func<float, float> abs = num => Mathf.Abs(num);
+							var minWDist = x < abs(x - size) ? x : abs(x - size);
+							var minDDist = z < abs(z - size) ? z : abs(z - size);
+							var totalDist = abs(minDDist - minWDist);
+							var half = size / 2.0f;
+							chance = totalDist / half;
+							break;
+					}
 
                     if (Random.Range(0f, 1f) <= chance) wallsB[z][x] = true;
                 }
