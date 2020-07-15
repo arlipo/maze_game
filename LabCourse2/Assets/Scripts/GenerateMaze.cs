@@ -102,7 +102,7 @@ public class GenerateMaze : MonoBehaviour {
                 else if (isFromStart(x) && isFromEnd(z)) continue;
                 else if (isFromEnd(x) && isFromEnd(z)) continue;
                 else {
-					float chance = 1;// Eliska vrednjak
+					float chance = 1;
 					switch (mazeStyle) {
 						case MazeStyle.simplified: chance = 0; break;
 						case MazeStyle.random: chance = 0.3f; break;
