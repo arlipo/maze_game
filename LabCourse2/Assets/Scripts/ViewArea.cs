@@ -9,6 +9,8 @@ public class ViewArea : MonoBehaviour
     public int radius;
     public int fovEdges;
     public GameObject mainObject;
+    public bool hide;
+    bool prevHide;
     Polygon polygon;
 
     /// <summary>
@@ -21,6 +23,7 @@ public class ViewArea : MonoBehaviour
         this.transform.Rotate(new Vector3(90, 0, 0), Space.Self);
         UpdateAreaPosition();
         polygon.UpdateModel();
+        HideOrShowPolygon();
     }
     // Start is called before the first frame update
     void Start()
@@ -30,7 +33,21 @@ public class ViewArea : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(Input.GetKeyDown("h")) hide = !hide;
+        if (HideStatusChanged()) HideOrShowPolygon();
         UpdateAreaPosition();
+    }
+
+    bool HideStatusChanged() => hide != prevHide;
+
+    void HideOrShowPolygon() {
+        prevHide = hide;
+        if (hide) {
+            GetComponent<EPPZ.Geometry.Source.Mesh>().enabled = false;
+            GetComponent<MeshFilter>().mesh = null;
+        } else {
+            GetComponent<EPPZ.Geometry.Source.Mesh>().enabled = true;
+        }
     }
 
     void UpdateAreaPosition() {

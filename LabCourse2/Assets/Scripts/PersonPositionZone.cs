@@ -11,8 +11,12 @@ public class PersonPositionZone : MonoBehaviour
     public GameObject viewArea;
     [Range(0f, 2f)]
     public float updateAccuracy;
-    public bool drawWholePolygon;
+    public DrawType drawType;
     public float victimSpeed;
+
+    public enum DrawType {
+        drawWholePolygon = 0, drawCircleAround = 1, hide = 2
+    }
     PolygonModel mainPolygon;
     PolygonModel floorPolygon;
     PolygonModel viewPolygon;
@@ -58,9 +62,10 @@ public class PersonPositionZone : MonoBehaviour
     {
         if (ended) return;
         if (mainPolygon == null) { EndIt(); return; }
+        if (Input.GetKeyDown("q")) drawType = drawType == DrawType.hide ? 0 : drawType + 1;
         UpdatePosition();
         CalculateNewArea();
-        if (NewAreaCalcIsNeeded() || !drawWholePolygon) {
+        if (NewAreaCalcIsNeeded()) {
             ReDrawArea();
         }
     }
@@ -82,8 +87,17 @@ public class PersonPositionZone : MonoBehaviour
 
     void ReDrawArea() {
         prevPos = newPos;
-        var polygonToShow = drawWholePolygon ? mainPolygon : mainPolygon.IntersectPolygon(viewPolygon.OffsetPolygon(2));
+        var polygonToShow = GetPolygonToDraw();
         meshFilter.mesh = polygonToShow?.Mesh(Color.green, TriangulatorType.Dwyer);
+    }
+
+    PolygonModel GetPolygonToDraw() {
+        switch(drawType) {
+            case DrawType.hide: return null;
+            case DrawType.drawWholePolygon: return mainPolygon;
+            case DrawType.drawCircleAround: return mainPolygon.IntersectPolygon(viewPolygon.OffsetPolygon(2));
+            default: return null;
+        }
     }
     bool NewAreaCalcIsNeeded() {
         System.Func<float, float, bool> isIdentical = (pos1, pos2) =>
@@ -100,28 +114,28 @@ public class PersonPositionZone : MonoBehaviour
         return (float) System.Math.Round(pos1, 1);
     }
 
-    GUIStyle guiStyle = new GUIStyle();
-    GUIStyle groupStyle = new GUIStyle();
-    void OnGUI()
-    {
-        var width = 250;
-        var height = 125;
-                Color[] pix = new Color[width*height];
-        for(int i = 0; i < pix.Length; i++)
-            pix[i] = new Color(0.5f, 0.5f, 0.5f, 0.7f);
-        Texture2D result = new Texture2D(width, height);
-        result.SetPixels(pix);
-        result.Apply();
+    // GUIStyle guiStyle = new GUIStyle();
+    // GUIStyle groupStyle = new GUIStyle();
+    // void OnGUI()
+    // {
+    //     var width = 250;
+    //     var height = 125;
+    //             Color[] pix = new Color[width*height];
+    //     for(int i = 0; i < pix.Length; i++)
+    //         pix[i] = new Color(0.5f, 0.5f, 0.5f, 0.7f);
+    //     Texture2D result = new Texture2D(width, height);
+    //     result.SetPixels(pix);
+    //     result.Apply();
 
-        guiStyle.fontSize = 25;
-        guiStyle.normal.textColor = Color.white;
-        groupStyle.normal.background = result;
+    //     guiStyle.fontSize = 25;
+    //     guiStyle.normal.textColor = Color.white;
+    //     groupStyle.normal.background = result;
         
-        GUI.BeginGroup(new Rect(10, 10, width, height), groupStyle);
-        GUI.Box(new Rect(0,0,140,140), "Previous position", guiStyle);
-        GUI.Label(new Rect(10, 25, 200, 30), string.Format("x: {0}, z: {1}", RoundPosition(prevPos.x), RoundPosition(prevPos.z)), guiStyle);
-        GUI.Box(new Rect(0, 50, 200, 30), "New position", guiStyle);
-        GUI.Label(new Rect(10, 75, 200, 30), string.Format("x: {0}, z: {1}", RoundPosition(newPos.x), RoundPosition(newPos.z)), guiStyle);
-        GUI.EndGroup();
-    }
+    //     GUI.BeginGroup(new Rect(10, 10, width, height), groupStyle);
+    //     GUI.Box(new Rect(0,0,140,140), "Previous position", guiStyle);
+    //     GUI.Label(new Rect(10, 25, 200, 30), string.Format("x: {0}, z: {1}", RoundPosition(prevPos.x), RoundPosition(prevPos.z)), guiStyle);
+    //     GUI.Box(new Rect(0, 50, 200, 30), "New position", guiStyle);
+    //     GUI.Label(new Rect(10, 75, 200, 30), string.Format("x: {0}, z: {1}", RoundPosition(newPos.x), RoundPosition(newPos.z)), guiStyle);
+    //     GUI.EndGroup();
+    // }
 }
