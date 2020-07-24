@@ -1,139 +1,76 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using EPPZ.Geometry.Model;
+using System.Linq;
 using UnityEngine;
 
 public class Brain : MonoBehaviour
 {
-    public GameObject eyes;
-    public DNA dna;
-    public bool spawnEntered, checkointHighEntered, checkointLowEntered;
-    float distance;
-    int DNALength = 500;
-    int curDna;
-    int curFrame;
-    bool alive = true;
-    bool seeWall = false;
-    int spinningTimes;
-    Vector3 start;
-    Vector3 center;
+    public int sensorsCount;
+    public GameObject zones;
+    ANN neuralNetwork;
+    Sensor[] sensors;
+    ViewArea viewArea;
+    PersonPositionZone personPositionZone;
+    bool forward;
 
-    int speed = 15;
-
-    void Die() {
-        alive = false;
-        EraseValues();
-    }
-    void OnTriggerEnter(Collider other)
+    /// Awake is called when the script instance is being loaded.
+    void Awake()
     {
-        System.Action eraseValues = () => {
-            start = this.transform.position;
-            distance = 0;
-        };
+        sensors = new Sensor[sensorsCount];
+        viewArea = zones.GetComponentInChildren<ViewArea>();
+        personPositionZone = zones.GetComponentInChildren<PersonPositionZone>();
+        forward = true;
+        InitializeSensors();
+        UpdateSensors();
+    }
 
-        switch(other.gameObject.tag) {
-            case "spawn": spawnEntered = true; eraseValues(); break;
-            case "checkpointh": checkointHighEntered = true; eraseValues(); break; 
-            case "checkpointl": checkointLowEntered = true; eraseValues(); break; 
+    void InitializeSensors() {
+        for (int i = 0; i < sensorsCount; i++)
+        {
+            sensors[i] = new Sensor();
         }
     }
-    void OnCollisionEnter(Collision obj)
-    {
-        if(obj.gameObject.tag == "dead") {
-            Die();
-        } else if (obj.gameObject.tag == "pbot") {
-            Debug.Log("Collision detected!");
+
+    void UpdateSensors() {
+        var edges = Circle.Create(this.transform.position, viewArea.radius + 2, sensorsCount);
+        var center = new Vector2(this.transform.position.x, this.transform.position.z);
+        for (int i = 0; i < sensorsCount; i++)
+        {
+            var edge = new Vector2(edges[i].x, edges[i].y);
+            sensors[i].UpdateSegment(center, edge);
+            sensors[i].UpdateIntersectionWithPolygon(personPositionZone.mainPolygon);
         }
     }
-    public float GetFitness() {
-        var fitness = -distance + (spawnEntered ? 0 : 0) + (checkointHighEntered ? 100 : 0) + (checkointLowEntered ? 100 : 0);
-        return fitness;
-    }
-    public void Init() {
-        dna = new DNA(1, DNALength);
-        InitializeValues();
-    }
+
     // Start is called before the first frame update
     void Start()
     {
-        center = new Vector3(378.6f, this.transform.position.y, 102.6f);
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!alive) return;
-        // RaycastHit hit;
-        // seeWall = false;
-        // Debug.DrawRay(eyes.transform.position, eyes.transform.forward, Color.red, eyes.transform.forward.magnitude / 2);
-        // if (Physics.SphereCast(eyes.transform.position, 0.1f, eyes.transform.forward * 0.5f, out hit, 0.5f)) {
-        //     if (hit.collider.gameObject.tag == "wall") {
-        //         seeWall = true;
-        //     }
-        // }
+        UpdateSensors();
+        transform.position += transform.forward * Time.deltaTime;
     }
 
-    void FixedUpdate()
+    void OnDrawGizmos()
     {
-        if (!alive || curDna >= DNALength) return;
-        curFrame++;
-        RaycastHit hit;
-        seeWall = false;
-        
-        Debug.DrawRay(eyes.transform.position, eyes.transform.forward, Color.red, eyes.transform.forward.magnitude / 2);
-        if (Physics.SphereCast(eyes.transform.position, 0.1f, eyes.transform.forward * 0.5f, out hit, 0.5f)) {
-            if (hit.collider.gameObject.tag == "wall") {
-                seeWall = true;
+        if (sensors == null || personPositionZone.mainPolygon == null) return;
+        System.Func<Vector2, Vector3> to3Dpos = vector2 => 
+            new Vector3(vector2.x, this.transform.position.y + 0.03f, vector2.y);
+        foreach (var sensor in sensors)
+        {
+            if (sensor.IsActive) {
+                Gizmos.color = Color.blue;
+                Gizmos.DrawSphere(to3Dpos(sensor.IntersectionPoint.Value), 0.3f);
+                Gizmos.color = Color.green;
+            } else {
+                Gizmos.color = Color.red;
             }
+            Gizmos.DrawLine(to3Dpos(sensor.Segment.a), to3Dpos(sensor.Segment.b));
         }
-
-        var z = 0;
-        var rot = 0f;
-        if (curFrame % 10 == 0) {
-            rot = 90 * dna.genes[curDna];
-            curDna++;
-        }
-        
-        if (!seeWall) {
-            z = speed;
-            spinningTimes = 0;
-        } else {
-            spinningTimes++;
-        }
-
-        // if (spinningTimes > 50) Die();
-
-        this.transform.Translate(0, 0, z * Time.deltaTime);
-        this.transform.Rotate(0, rot, 0);
-        
-        
-        distance = (this.transform.position - center).magnitude;
-    }
-
-    // var dot = Vector3.Dot(this.transform.forward, Vector3.forward);
-            // if (dot >= 0.5) index = 0; // up
-            // else if (dot <= -0.5) index = 1; // down
-            // else {
-            //     dot = Vector3.Dot(this.transform.forward, Vector3.right);
-            //     if (dot >= 0.5) index = 2; // right
-            //     else if (dot <= -0.5) index = 3; // left
-            // }
-
-    public void CLone(Brain brain) {
-        DNALength = brain.DNALength;
-        dna = brain.dna;
-        InitializeValues();
-    }
-
-    void InitializeValues() {
-        start = this.transform.position;
-        curDna = 0;
-        EraseValues();
-    }
-
-    void EraseValues() {
-        spinningTimes = 0;
-        spawnEntered = false;
-        checkointHighEntered = false;
-        checkointLowEntered = false;
     }
 }

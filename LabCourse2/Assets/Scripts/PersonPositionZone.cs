@@ -11,13 +11,16 @@ public class PersonPositionZone : MonoBehaviour
     public GameObject viewArea;
     [Range(0f, 2f)]
     public float updateAccuracy;
+    public float secondsToUpdate;
+    float secondsPassed = 0;
     public DrawType drawType;
     public float victimSpeed;
 
     public enum DrawType {
         drawWholePolygon = 0, drawCircleAround = 1, hide = 2
     }
-    PolygonModel mainPolygon;
+    [HideInInspector]
+    public PolygonModel mainPolygon;
     PolygonModel floorPolygon;
     PolygonModel viewPolygon;
     ViewArea viewAreaScript;
@@ -62,12 +65,14 @@ public class PersonPositionZone : MonoBehaviour
     {
         if (ended) return;
         if (mainPolygon == null) { EndIt(); return; }
-        if (Input.GetKeyDown("q")) drawType = drawType == DrawType.hide ? 0 : drawType + 1;
-        UpdatePosition();
-        CalculateNewArea();
-        if (NewAreaCalcIsNeeded()) {
+        secondsPassed += Time.deltaTime;
+        if (Input.GetKeyDown("q")) {
+            drawType = drawType == DrawType.hide ? 0 : drawType + 1;
             ReDrawArea();
         }
+        UpdatePosition();
+        CalculateNewArea();
+        if (NewAreaRedrawIsNeeded()) ReDrawArea();
     }
 
     void EndIt() {
@@ -99,7 +104,11 @@ public class PersonPositionZone : MonoBehaviour
             default: return null;
         }
     }
-    bool NewAreaCalcIsNeeded() {
+    bool NewAreaRedrawIsNeeded() {
+        if (secondsPassed >= secondsToUpdate) {
+            secondsPassed = 0;
+            return true;
+        }
         System.Func<float, float, bool> isIdentical = (pos1, pos2) =>
         {
             return Mathf.Abs(RoundPosition(pos1) - RoundPosition(pos2)) < updateAccuracy;
@@ -132,10 +141,10 @@ public class PersonPositionZone : MonoBehaviour
     //     groupStyle.normal.background = result;
         
     //     GUI.BeginGroup(new Rect(10, 10, width, height), groupStyle);
-    //     GUI.Box(new Rect(0,0,140,140), "Previous position", guiStyle);
-    //     GUI.Label(new Rect(10, 25, 200, 30), string.Format("x: {0}, z: {1}", RoundPosition(prevPos.x), RoundPosition(prevPos.z)), guiStyle);
-    //     GUI.Box(new Rect(0, 50, 200, 30), "New position", guiStyle);
-    //     GUI.Label(new Rect(10, 75, 200, 30), string.Format("x: {0}, z: {1}", RoundPosition(newPos.x), RoundPosition(newPos.z)), guiStyle);
+    //     GUI.Box(new Rect(0,0,140,140), "Seconds passed: " + secondsPassed, guiStyle);
+    //     // GUI.Label(new Rect(10, 25, 200, 30), string.Format("x: {0}, z: {1}", RoundPosition(prevPos.x), RoundPosition(prevPos.z)), guiStyle);
+    //     // GUI.Box(new Rect(0, 50, 200, 30), "New position", guiStyle);
+    //     // GUI.Label(new Rect(10, 75, 200, 30), string.Format("x: {0}, z: {1}", RoundPosition(newPos.x), RoundPosition(newPos.z)), guiStyle);
     //     GUI.EndGroup();
     // }
 }

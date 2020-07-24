@@ -505,6 +505,32 @@ namespace EPPZ.Geometry.Model
 
 			return isIntersecting;
 		}
+		public bool IsIntersectingWithSegment(Segment segment, float accuracy, out Vector2 intersectionPoint)
+		{
+			bool isIntersecting = false;
+			intersectionPoint = Vector2.zero;
+			var polygonsCopy = new List<Polygon>(polygons);
+			polygonsCopy.Add(this);
+
+			// foreach (Edge eachEdge in edges){
+	
+			// }
+			
+			foreach (var poly in polygonsCopy)
+			{
+				foreach (Edge eachEdge in poly.edges)
+				{
+					Vector2 currentIntersectionPoint = Vector2.zero;
+					var isCurrentIntersecting = segment.IntersectionWithSegmentWithAccuracy(eachEdge, accuracy, out currentIntersectionPoint);
+					if (isCurrentIntersecting) {
+						intersectionPoint = currentIntersectionPoint;
+						isIntersecting = true;
+					}
+				}
+			}
+
+			return isIntersecting;
+		}
 		
 	#endregion
 		

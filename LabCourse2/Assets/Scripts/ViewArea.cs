@@ -51,13 +51,9 @@ public class ViewArea : MonoBehaviour
     }
 
     void UpdateAreaPosition() {
-        var oneAngle = 2 * Mathf.PI / fovEdges;
-        for (int i = 0; i < fovEdges; i++)
-        {
-            var angle = oneAngle * i;
-            var x = mainObject.transform.position.x + radius * Mathf.Sin(angle);
-            var z = mainObject.transform.position.z + radius * Mathf.Cos(angle);
-            polygon.points[i].position = new Vector3(x, z, 0);   
-        }
+        var positions = Circle.Create(mainObject.transform.position, radius, fovEdges);
+        for (int i = 0; i < fovEdges; i++) polygon.points[i].position = positions[i];
     }
+
+    public EPPZ.Geometry.Model.Polygon Polygon { get => polygon.polygon; }
 }

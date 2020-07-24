@@ -127,6 +127,20 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 2060402114}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &112062831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 112062825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2ca77ac5d6dc6b4ba2fdb51e5ce57f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  segmentsCount: 8
+  zones: {fileID: 1358146751}
 --- !u!1 &330727200
 GameObject:
   m_ObjectHideFlags: 0
@@ -457,6 +471,26 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &811009791 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6616938049766188646, guid: 5d1f53797ac5006438c2973d9ad18bfb,
+    type: 3}
+  m_PrefabInstance: {fileID: 1442849351}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &811009796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 811009791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2ca77ac5d6dc6b4ba2fdb51e5ce57f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  segmentsCount: 8
+  zones: {fileID: 1358146751}
 --- !u!1 &1005569790
 GameObject:
   m_ObjectHideFlags: 0
@@ -808,6 +842,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Bot
       objectReference: {fileID: 0}
+    - target: {fileID: 6616938049766188646, guid: 5d1f53797ac5006438c2973d9ad18bfb,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7413020787736086834, guid: 5d1f53797ac5006438c2973d9ad18bfb,
         type: 3}
       propertyPath: m_Constraints
@@ -870,7 +909,7 @@ MonoBehaviour:
   radius: 3
   fovEdges: 32
   mainObject: {fileID: 112062825}
-  hide: 0
+  hide: 1
 --- !u!114 &1760607032
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -997,6 +1036,7 @@ MonoBehaviour:
   floor: {fileID: 1290654028}
   viewArea: {fileID: 1760607029}
   updateAccuracy: 0.5
+  secondsToUpdate: 2
   drawType: 2
   victimSpeed: 0.18
 --- !u!23 &1958309489
@@ -1149,7 +1189,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wallPrefab: {fileID: 1389443076154874, guid: c6e6cba4a1cdb494ead1b697c1d772f4, type: 3}
-  mazeStyle: 1
+  mazeStyle: 0
   size: 40
 --- !u!4 &2112824884
 Transform:
