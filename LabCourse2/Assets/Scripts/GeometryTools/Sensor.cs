@@ -8,6 +8,7 @@ public class Sensor
 {
     public Segment Segment { get => segment; }
     public Vector2? IntersectionPoint { get => intersectionPoint; }
+    public Vector2? IntersectionPointWithWall { get => intersectionPointWithWall; }
     private Vector2? intersectionPoint;
     private Vector2? intersectionPointWithWall;
     private Segment segment;
@@ -45,8 +46,8 @@ public class Sensor
     public bool IsActive() {
         if (intersectionPoint == null) return false;
         if (intersectionPointWithWall == null) return true;
-        var dirTointersectionPoint = (intersectionPoint.Value - segment.a).magnitude;
-        var dirTointersectionPointWithWall = (intersectionPointWithWall.Value - segment.a).magnitude;
-        return dirTointersectionPoint <= dirTointersectionPointWithWall;
+        var distTointersectionPoint = (intersectionPoint.Value - segment.a).magnitude;
+        var distTointersectionPointWithWall = (intersectionPointWithWall.Value - segment.a).magnitude;
+        return distTointersectionPoint <= distTointersectionPointWithWall;
     }
 }

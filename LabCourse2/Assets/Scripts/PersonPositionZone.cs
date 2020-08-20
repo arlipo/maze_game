@@ -142,7 +142,6 @@ public class PersonPositionZone : MonoBehaviour
         
     //     GUI.BeginGroup(new Rect(10, 10, width, height), groupStyle);
     //     GUI.Box(new Rect(0,0,140,140), "Seconds passed: " + secondsPassed, guiStyle);
-    //     // GUI.Label(new Rect(10, 25, 200, 30), string.Format("x: {0}, z: {1}", RoundPosition(prevPos.x), RoundPosition(prevPos.z)), guiStyle);
     //     // GUI.Box(new Rect(0, 50, 200, 30), "New position", guiStyle);
     //     // GUI.Label(new Rect(10, 75, 200, 30), string.Format("x: {0}, z: {1}", RoundPosition(newPos.x), RoundPosition(newPos.z)), guiStyle);
     //     GUI.EndGroup();

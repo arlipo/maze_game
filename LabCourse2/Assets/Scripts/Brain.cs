@@ -68,43 +68,96 @@ public class Brain : MonoBehaviour
     void OnDrawGizmos()
     {
         if (sensors == null || personPositionZone.mainPolygon == null) return;
-        System.Func<Vector2, Vector3> to3Dpos = vector2 => 
-            new Vector3(vector2.x, zones.transform.position.y + 0.03f, vector2.y);
+        var y = zones.transform.position.y + 0.03f;
         foreach (var sensor in sensors)
         {
             if (sensor.IsActive()) {
                 Gizmos.color = Color.blue;
-                Gizmos.DrawSphere(to3Dpos(sensor.IntersectionPoint.Value), 0.3f);
+                Gizmos.DrawSphere(To3Dpos(sensor.IntersectionPoint.Value, y), 0.3f);
                 Gizmos.color = Color.green;
             } else {
                 Gizmos.color = Color.red;
             }
-            Gizmos.DrawLine(to3Dpos(sensor.Segment.a), to3Dpos(sensor.Segment.b));
+            Gizmos.DrawLine(To3Dpos(sensor.Segment.a, y), To3Dpos(sensor.Segment.b, y));
         }
     }
+
+    Vector3 To3Dpos(Vector2 vector2, float y) => new Vector3(vector2.x, y, vector2.y);
 
     Vector3 GetCurrentGoalToMove() {
         var currenSensorsList = new List<Sensor>(sensors);
         
         if (forward) {
-            var firstSensorIndex = (int) sensorsCount / 2 + 1;
+            var firstSensorIndex = (int) (sensorsCount - sensorsCount / 4) - 1;
             currenSensorsList.RemoveRange(0, firstSensorIndex);
             currenSensorsList.AddRange(sensors.Take(firstSensorIndex));
         } else {
+            var firstSensorIndex = (int) (sensorsCount - sensorsCount / 4) + 1;
+            currenSensorsList.RemoveRange(0, firstSensorIndex);
             currenSensorsList.Reverse();
+            currenSensorsList.AddRange(sensors.Take(firstSensorIndex).Reverse());
         }
         Sensor firstSensor;
-        if (currenSensorsList.Count > 0 && currenSensorsList.First().IsActive()) {
-            firstSensor = currenSensorsList.First();
-            ChangeDirection();
-        } else firstSensor = currenSensorsList.Find(sensor => sensor.IsActive());
+        // if (currenSensorsList.Count > 0 && currenSensorsList.Last().IsActive()) {
+        //     firstSensor = currenSensorsList.Last();
+        //     ChangeDirection();
+        // } else 
+        firstSensor = currenSensorsList.Find(sensor => sensor.IsActive());
         if (firstSensor == null) return GetTemporaryGoal();
         var interSectionPoint2d = firstSensor.IntersectionPoint.Value;
         var goal3d = new Vector3(interSectionPoint2d.x, transform.position.y, interSectionPoint2d.y);
         return goal3d;
     }
 
-    Vector3 GetTemporaryGoal() => transform.position + Vector3.right;
+    Vector3 GetTemporaryGoal() {
+        var nearestWallIndex = 0;
+        float? minDist = null;
+        for (int i = 0; i < sensorsCount; i++)
+        {
+            var sensor = sensors[i];
+            var goal = sensor.IntersectionPointWithWall;
+            if (goal == null) continue;
+            var distToCurrentGoal = (goal.Value - sensor.Segment.a).magnitude;
+            if (minDist == null || minDist.Value > distToCurrentGoal) {
+                minDist = distToCurrentGoal;
+                nearestWallIndex = i;
+            }
+        }
+        int moveIndex;
+        if (minDist != null && minDist <= 0.45f) {    
+            var qtrOfSensors = sensorsCount / 4;
+            if (forward) {
+                moveIndex = (nearestWallIndex + qtrOfSensors) % sensorsCount;
+            } else {
+                var negIndex = nearestWallIndex - qtrOfSensors;
+                moveIndex = negIndex < 0 ? sensorsCount + negIndex : negIndex;
+            }
+        } else moveIndex = nearestWallIndex;
+        return To3Dpos(sensors[moveIndex].Segment.b, transform.position.y);
+    } 
+        
 
     void ChangeDirection() => forward = !forward;
+
+    GUIStyle guiStyle = new GUIStyle();
+    GUIStyle groupStyle = new GUIStyle();
+    void OnGUI()
+    {
+        var width = 130;
+        var height = 45;
+                Color[] pix = new Color[width*height];
+        for(int i = 0; i < pix.Length; i++)
+            pix[i] = new Color(0.5f, 0.5f, 0.5f, 0.7f);
+        Texture2D result = new Texture2D(width, height);
+        result.SetPixels(pix);
+        result.Apply();
+
+        guiStyle.fontSize = 25;
+        guiStyle.normal.textColor = Color.white;
+        groupStyle.normal.background = result;
+        
+        GUI.BeginGroup(new Rect(10, 10, width, height), groupStyle);
+        GUI.Label(new Rect(10, 10, width, 30), forward ? "forward" : "backward", guiStyle);
+        GUI.EndGroup();
+    }
 }
