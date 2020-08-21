@@ -13,13 +13,22 @@ public class Sensor
     private Vector2? intersectionPointWithWall;
     private Segment segment;
     private Polygon floor;
-    public Sensor(Vector2 a, Vector2 b, Polygon floorPolygon) {
-        segment = Segment.SegmentWithPoints(a, b);
+    private Vector2 sensorDirection;
+    private float sensorLength;
+    private GameObject mainObject;
+
+    private Vector2 CurrentPosition => DimensionsConverter.To2Dpos(mainObject.transform.position);
+
+    public Sensor(GameObject _mainObject, Vector2 pointingAt, Polygon floorPolygon) {
+        mainObject = _mainObject;
+        var curPos = CurrentPosition;
+        segment = Segment.SegmentWithPoints(curPos, pointingAt);
+        var sensorsVector = pointingAt - curPos;
+        sensorLength = sensorsVector.magnitude;
+        sensorDirection = sensorsVector.normalized;
         intersectionPoint = null;
         floor = floorPolygon;
     }
-
-    public Sensor(Polygon floorPolygon) : this(new Vector2(), new Vector2(), floorPolygon) {}
 
     public void UpdateIntersectionWithPolygon(Polygon polygon) {
         var resPositions = new List<Vector2>();
@@ -39,9 +48,10 @@ public class Sensor
         return ordered.First();
     }
 
-    public void UpdateSegment(Vector2 bodyPos, Vector2 targetPos) {
-        segment.a = bodyPos;
-        segment.b = targetPos;
+    public void UpdateSegment() {
+        var curPos = CurrentPosition;
+        segment.a = curPos;
+        segment.b = curPos + sensorDirection * sensorLength;
     }
     public bool IsActive() {
         if (intersectionPoint == null) return false;

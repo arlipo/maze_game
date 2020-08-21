@@ -30,20 +30,21 @@ public class Brain : MonoBehaviour
         UpdateSensors();
     }
 
-    void InitializeSensors() {
+    void InitializeSensors() {       
+        var edges = Circle.Create(this.transform.position, viewArea.radius + 2, sensorsCount);
+
         for (int i = 0; i < sensorsCount; i++)
         {
-            sensors[i] = new Sensor(floorPolygon);
+            var edge = new Vector2(edges[i].x, edges[i].y);
+            sensors[i] = new Sensor(gameObject, edge, floorPolygon);
         }
     }
 
     void UpdateSensors() {
-        var edges = Circle.Create(this.transform.position, viewArea.radius + 2, sensorsCount);
-        var center = new Vector2(this.transform.position.x, this.transform.position.z);
         for (int i = 0; i < sensorsCount; i++)
         {
-            var edge = new Vector2(edges[i].x, edges[i].y);
-            sensors[i].UpdateSegment(center, edge);
+            
+            sensors[i].UpdateSegment();
             sensors[i].UpdateIntersectionWithPolygon(personPositionZone.mainPolygon);
         }
     }
@@ -73,16 +74,14 @@ public class Brain : MonoBehaviour
         {
             if (sensor.IsActive()) {
                 Gizmos.color = Color.blue;
-                Gizmos.DrawSphere(To3Dpos(sensor.IntersectionPoint.Value, y), 0.3f);
+                Gizmos.DrawSphere(DimensionsConverter.To3Dpos(sensor.IntersectionPoint.Value, y), 0.3f);
                 Gizmos.color = Color.green;
             } else {
                 Gizmos.color = Color.red;
             }
-            Gizmos.DrawLine(To3Dpos(sensor.Segment.a, y), To3Dpos(sensor.Segment.b, y));
+            Gizmos.DrawLine(DimensionsConverter.To3Dpos(sensor.Segment.a, y), DimensionsConverter.To3Dpos(sensor.Segment.b, y));
         }
     }
-
-    Vector3 To3Dpos(Vector2 vector2, float y) => new Vector3(vector2.x, y, vector2.y);
 
     Vector3 GetCurrentGoalToMove() {
         var currenSensorsList = new List<Sensor>(sensors);
@@ -133,7 +132,7 @@ public class Brain : MonoBehaviour
                 moveIndex = negIndex < 0 ? sensorsCount + negIndex : negIndex;
             }
         } else moveIndex = nearestWallIndex;
-        return To3Dpos(sensors[moveIndex].Segment.b, transform.position.y);
+        return DimensionsConverter.To3Dpos(sensors[moveIndex].Segment.b, transform.position.y);
     } 
         
 
